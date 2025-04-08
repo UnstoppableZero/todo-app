@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+    <link href = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class = "containe mt-4"></div>
+    <h1>My Todo List</h1>
+
+    <!-- Add Task Form -->
+    <h2>Add a Task</h2>
+    <form action="/add" method="POST">
+      <div class="form-group">
+        <label for="task">Task</label>
+        <input type="text" id="task" name="task" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="due">Due Date</label>
+        <input type="date" id="due" name="due" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="priority">Priority</label>
+        <select id="priority" name="priority" class="form-control">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Add Task</button>
+    </form>
+
+    <hr>
+
+    <h2>Todo List</h2>
+    <ul class="list-group">
+      {% for task in tasks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <!-- Mark Task as Complete Button -->
+          <form action="/complete/{{ loop.index0 }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-success btn-sm">✔</button>
+          </form>
+          
+          <!-- Task Name with Strikethrough if Completed -->
+          {% if task.done %}
+            <s>{{ task.task }}</s>
+          {% else %}
+            {{ task.task }}
+          {% endif %}
+          
+          <!-- Priority Badge -->
+          <span class="badge badge-secondary">{{ task.priority }}</span>
+          
+          <!-- Due Date Badge -->
+          <span class="badge badge-info">{{ task.due }}</span>
+
+          <!--Delete Task Button-->
+          <form action="/delete/{{ loop.index0 }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+
+          <!--Edit Task Button-->
+          <a href ="/edit/{{ loop.index0 }}" class="btn btn-warning btn-sm">Edit</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
