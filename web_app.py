@@ -1,8 +1,18 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
+from flask_bcrypt import Bcrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 from storage import load_tasks, save_tasks
 
 app = Flask(__name__)
+
+app.secret_key = "your_secret_key"
+bcrypt = Bcrypt(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
 #Configuring SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db' # SQLite database for users
@@ -71,10 +81,51 @@ def edit_task(task_id):
     
     return redirect("/")
 
-class User(db.Model):
+
+@app.route("/register", methods = ["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+        #Create a User
+        new_user = User(username = username, password = hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Account created successfully!", "success")
+        return redirect("/login")
+    return render_template("register.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        # Check if the user exists in the database
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)  # Log the user in using Flask-Login
+
+            flash("Login successful!", "success")
+            return redirect("/dashboard")  # Redirect to the dashboard or home page
+
+        flash("Login failed. Check your username or password.", "danger")
+
+    return render_template("login.html")
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(150), unique = True, nullable = False) #User's username
     password = db.Column(db.String(150), nullable = False) #User's password which is hashed
+
+    def __repr__(self):
+        return f'<User {self.username}>'
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # Task ID (primary key)
@@ -86,6 +137,12 @@ class Task(db.Model):
     user = db.relationship('User', back_populates='tasks')  # Relationship to the User model
 
 User.tasks = db.relationship('Task', back_populates='user')  # Define relationship between User and Task
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

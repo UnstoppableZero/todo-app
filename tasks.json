@@ -1,25 +1,8 @@
 [
     {
-        "task": "Eat Food",
-        "done": false,
-        "due": "2025-04-11"
-    },
-    {
-        "task": "Turn off Lights",
-        "done": false,
-        "due": "2025-04-08",
-        "priority": "High"
-    },
-    {
-        "task": "Clean Dishes",
-        "done": true,
-        "due": "2009-12-24",
-        "priority": "High"
-    },
-    {
         "task": "Clean Cat",
-        "done": true,
-        "due": "2025-04-18",
-        "priority": "Low"
+        "done": false,
+        "due": "2025-04-11",
+        "priority": "Medium"
     }
 ]
